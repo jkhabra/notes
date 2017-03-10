@@ -1,0 +1,250 @@
+* Rooting
+
+** What is root
+- The term “root” comes from the Linux world and describes the lowest level of the file system, or root access
+
+- Root process mean that superuser privileges have been accessed, meaning you have access to the entire file system rather than just the surface layer
+
+- Root access, allow you to change absolutely everything on the system
+
+  - Having this type of access can be dangerous for a novice user because important system files that are required by the OS can be deleted just as easily as useless ones
+
+  - This is one of the reasons that most smartphones are not rooted by default
+
+** Why need to unlock bootlooder before rooting
+source: https://forum.xda-developers.com/wiki/Bootloader
+
+ - It is not necessary to unlock the boot loader before rooting android devices
+
+ - Boot loader helps to load either Andorid ROM or Recovery
+
+ - If the boot loader is "LOCKED" then it will verify what it boots
+
+   - So we can't boot custom recovery like ClockworkMod, TWRP etc, also can't boot custom ROM like CyanogenMod
+
+ - Unlocking boot loader turns off the verification
+
+ - Unlocked boot loader will boot all the custom recovery and ROMS
+
+ - In case of rooting, sometimes it may be required to install custom recovery, in that situation boot loader have to be unlocked
+
+** What is the difference between root by app and root by computer? (source: https://www.quora.com)
+
+- PC uses the Android Debug Bridge or ADB as well as the fastboot in the background to place the su binary script file in the system folder of the root directory
+
+- Rooting apps use the cloud based server to acquire the proper su script file accordingly to the user’s phone
+
+- Root device using apps like kingroot and kingoroot ,they usually do not unlock the bootloader
+
+- Root android through apps is most simple method you can use
+
+  - Also you can unroot your whole device anytime
+
+** Why need a custom recovery for rooting (source:http://www.howtogeek.com/193055/what-is-a-custom-recovery-on-android-and-why-would-i-want-one/)
+
+- Android devices come with Google’s recovery environment, which is often referred to as the “stock recovery”
+
+  - This recovery software can be used to restore the device to factory default settings, update its operating system, and perform other diagnostic tasks
+
+- The stock recovery is a minimal, limited system
+
+- It’s designed to be ignored, and it can generally only flash OTA updates and ROMs provided by the device’s manufacturer, not third-party ROMs
+
+- For install a new ROM to your device you will need to boot to recovery mode first
+
+- A custom recovery is a third-party recovery environment
+
+  - Flashing this recovery environment onto your device replaces the default with third-party, customized recovery environment
+
+  - A custom recovery will do the same things as the stock Android recovery however, it will also have additional features
+
+  - Custom recoveries often have the ability to create and restore device backups
+
+  - Custom recoveries allow you to install custom ROMs
+
+*** Popular Custom Recoveries
+
+ - *Clockwork Mod Recovery (CWM)*: can create and restore Android backups even device’s entire file system
+
+   - Clockwork Mod offers a ROM manager with a file browser that allows you to easily browse for
+
+   - Install custom ROMs via Clockwork Mod Recovery and manage and restore backups
+
+   - It also has other advanced features that will be useful if you’re installing and dealing with custom ROMs
+
+ - *Team Win Recovery Project (TWRP)*: is a touch-based recovery environment
+
+   - Unlike other recovery environments — including default stock recovery, which needs to be controlled with the device’s volume and power buttons
+
+     - This recovery environment has a touch-based interface
+
+   - TWRP offers ROM installation and backup features the stock recovery environment doesn’t
+
+   - TWRP even supports themes. Like CWM
+
+** What is a custom ROM?
+
+  - A custom ROM is basically a different operating system for your smartphone
+
+  - Custom ROMS are also enriched with many useful extra features and customization options that affect the behavior of the system
+
+  - The user gets more control over their device than would ever be possible with the standard software from the manufacturer
+
+  - custom ROMs are also a good way to install a more recent version of Android on your device
+
+** What are Gapps?
+- Gapps are basically all the Google Apps, including the Play Store and Gmail
+  - For legal reasons, these apps are not a standard part of custom ROMS, but must be installed separately at the same time as flashing a ROM
+- There are plenty of simple Gapps installers that streamline the process
+
+** What is fastboot?
+source: https://www.kingoapp.com/help/fastboot-mode.htm
+
+- Fastboot is used for re-flash partitions on your device
+  - While in fastboot, you can modify the file system images from a computer over a USB connection
+- It also requires software from the Android SDK
+- fastboot mode is useful for quick-updating the firmware, without having to use a recovery mode
+- It’s the preferred way to initially install the recovery image
+- It unlocks the Bootloader
+
+** What is a Nandroid backup? (source:http://searchmobilecomputing.techtarget.com/definition/NANDroid-backup )
+- A Nandroid backup is a complete image of your system
+  - If delete a necessary system file and "soft brick" your device, can be return it to the previous state
+    ("unbrick" it) by restoring a backup of your system using a Nandroid
+- Soft brick means a fixable broken phone
+- CAM and TWRP are ROM managers that offer NANDroid backup
+  - They allow the device’s owner to create a full NANDroid backup before trying out a new ROM
+
+** How to flash a custom recovery (source:http://wow.androidtipsandhacks.com/root/fastboot-mac-linux-recovery/)
+- If your phone is rooted then you can use apps for that otherwise needs a computer
+- First thing is download Andorid SDK and no need to install on Mac and Linux
+  - In windows need to install the Windows drivers for your phone or tablet before you connect it via USB
+  - Extract zip file where you want for Linux/Mac
+- Fastboot is not an application that runs within your OS, it requires the terminal or command line
+- Change the directory where you UN-zip SDK and go to platform-tools
+- Now power down your phone and boot it into fastboot mode
+- If you’re on Windows you’ll need to locate and install the drivers for your device before you connect it to your PC
+- Connect your phone to your computer via a USB cable
+  - Check that the computer can read the phone by typing fastboot devices on Windows or ./fastboot devices on Mac and Linux
+  - After a brief moment the serial number for your device will be displayed
+  - If the device can't be read it will tell you there are no devices connected and you should reattach it and try again
+- To flash a custom recovery to your Android device you first need to download one
+  - Make sure you pick one that is compatible with your device
+  - Move this .img file into the platform-tools folder
+  - Now return to the terminal window and type the command ./fastboot flash recovery [filename.img]
+  - Ensure there are no typos in what you have written, then hit Enter
+  - The custom recovery will now be flashed to your device
+
+
+** How to root a phone using command line?
+CLOSED: [2017-02-05 Sun 21:55]
+source(http://www.pcgamer.com/how-root-android-2013/)
+- The rooting process will vary from one device to the next
+
+- The first step is usually to either unlock, or bypass the bootloader
+
+- Make sure that phone is charged at least 50%
+
+- Set USB debugging Enabled for your Phone, To do so go to Settings-Developer options, and check the box for “USB debugging”
+
+  - If Developer options is not there than tab Build number 7 times & Developer options will appears in settings
+
+- Download and install the Android SDK from Google
+
+- Install the USB drivers package and Android tools
+
+- Go to the folder where you placed the fastboot.exe file and open a command prompt window there
+
+  - We use a tool called Android Debug Bridge (ADB)
+
+- In the command prompt, type adb devices , then hit enter. The window should show a device ID
+
+- Type adb reboot bootloader in the command prompt and hit enter. Your device will reboot into bootloader mode
+
+- Now type fastboot oem unlock and hit enter
+
+  - The device will pop up a warning Select yes, but be aware this is the step that wipes the phone or tablet
+
+- With your phone go to bootloader mode, flash new recovery
+
+  - This installs a new recovery over your old one so you can flash unsigned zip files
+
+- Finally, disconnect the device from your PC and use the volume rocker to navigate through the list of options in the bootloader
+
+  - Choose the Recovery option and select it using the power button
+
+  - Once in the recovery, find the option to Install a zip from the SD card, then select the SuperSU zip. And that’s it. You’re rooted
+** TODO What is bootloader and how to unlock it?
+** TODO How to find correct custom recovery image for a phone?
+** TODO How to find correct ROM for a phone?
+
+* Flashing Custom ROM
+
+- Download the Lineage os ROM and Gapps and store in your Device storage
+- Boot Device into TWRP recovery
+- Choose “Wipe” from TWRP main menu and wipe everything except where you store zip files
+- Go back to TWRP main menu, tap on “Install” and select the Lineage os ROM .zip file
+  - After that install gapps
+- After selecting the .zip file, do “Swipe to Confirm Flash” on the bottom of the screen to begin the custom ROM installation process
+  - It may take some time so sit back and relax
+- Once your ROM is successfully flashed, you’ll see “Wipe cache/Dalvik” option, select it
+  - Then do “Swipe to necessary” on the bottom of a screen
+- Once cache & Dalvik wipe finishes, Tap the “Back” button on-screen and then choose “Reboot System” button
+
+* TODO Troubleshoot failed to flash
+#+BEGIN_EXAMPLE
+This package supports IFwi Versions: %s; 0088.0173; this device has IFwi version .
+Updater process ended with Error: 7
+#+END_EXAMPLE
+-
+* fastboot
+ - fastboot devices :Displays the connect devices
+
+ -  adb reboot bootloader :Boot your device into bootloader or fastboot mode
+
+ - adb reboot recovery :Boot the device in recovery mode
+
+ - adb reboot fastboot :directly reboot your device in fastboot mode
+
+ - fastboot reboot bootloader :to reboot your device from fastboot mode to fastboot mode again
+
+ - fastboot flash ABC.zip :To flash a zip file via fastboot mode. [ABC= real zip file name]
+
+ - fastboot flash recovery ABC.img :To flash a recovery image file. [ABC= real zip file name]
+
+ - fastboot flash boot ABC.img :To flash a kernel image file. [ABC= real zip file name]
+
+ - fastboot oem unlock :to Unlock the bootloader of your device
+
+ - fastboot oem lock :to relock the bootloader of the device
+
+ - adb reboot :to normally reboot your device
+
+* adb
+    - adb devices :show connected android devices with the PC
+
+    - adb install :to install an application .apk
+
+    - adb pull :to copy a file from the device to the system
+
+    - adb push :to copy a file from the system to the device
+
+    - adb get-serialno :shows device serial no
+
+    - adb logcat :to display log file on the screen
+
+    - adb jdwp :shows JDWP processes at the device
+
+    - adb get-state :displays device’s status
+
+    - adb wait-for-device  :displays progress time required/ delay for the next command
+
+    - adb bugreport :shows dump sys, dump state and logcat data at the screen
+
+    - adb start-server :to start ADB server process
+
+    - adb kill-server to stop the ADB server
+
+    - adb shell :Lunch the remote shell console for commands at the device to control your device
+
+    - adb help :to display helps contents for ABD
