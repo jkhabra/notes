@@ -303,3 +303,146 @@ e.g
     Kenny looks okay --- so far
   {% endif %}
   #+END_SRC
+
+* Flask
+** Context
+- Flask provides two contexts: the application context and the request context
+  - *Request* variable is the request object associated with the current request
+  - *application context* =g= is a general purpose variable associated with the current application context
+    - ~g~ is a global variable
+
+- *teardown_appcontext*: is a decorator that uses to disconnect the database connection
+  - Functions marked with ~teardown_appcontext()~ are called every time the app context tears down
+  - The app context is created before the request comes in and is destroyed (torn down) whenever the request finishes
+  - A teardown can happen because of two reasons:
+    - Either everything went well (the error parameter will be None)
+    - An exception happened, in which case the error is passed to the teardown function
+
+** Quick Start
+*** Folder structure
+
+- =/application name=
+
+  It is the base folder where app sits
+  This is root directory of our app
+
+  - =setup.py=
+    Required by setuptools to do =pip install=
+  - =MANIFEST.in=
+    Required by setuptools to do =pip install=
+
+  - =/application name=
+    App is divided in modules. Web-app module lives in this.
+    - =__init__.py=
+      Standard file which make this folder a python module
+
+    - =/static=
+      Static files which are sent to client without doing any work on them.
+
+    - =/templates=
+      Jinja2 templates which are rendered by ~flask.render_html~
+
+**** Blueprints
+- Blueprints can greatly simplify how large applications work
+- Provide a central means for Flask extensions to register operations on applications
+- A Blueprint object works similarly to a Flask application object, but it is not actually an application
+- Rather it is a blueprint of how to construct or extend an application
+
+*** Create and configure app
+#+BEGIN_SRC python
+  # Import Flask class
+  from flask import Flask
+
+  # - Now create instance of class
+  # - First argument is the name of the application's module or package
+  # - For single module we should use __name__
+  #   - Depending on if it's started an application or imported as module
+  #     the name will be different ('__main__' versus actual import name)
+  #   - This is needed so that Flask knows where to look for templates, static files, and so on
+  app = Flask(__name__)
+
+  app.config.update({
+    ...configuration
+  })
+#+END_SRC
+
+- *Create app*: Import Flask class
+  - Now create instance of class
+    - First argument is the name of the application's module or package
+    - For single module we should use __name__
+      - Depending on if it's started an application or imported as module the name will be different ('__main__' versus actual import name)
+      - This needed so that Flask knows where to look for templates, static files, and so on
+
+- *Configure app*: There is a config object available which holds the loaded configuration values:
+  - The config attribute of the Flask object
+  - This is the place where Flask itself puts certain configuration values and also where extensions can put their configuration values
+  - This is also where we can have our own configuration
+  - Config is actually a subclass of a dictionary and can be modified
+  - To update multiple keys at once use dict.update method
+
+    e.g
+    #+BEGIN_EXAMPLE python
+    app.config.update(DEBUG=True, SECRET_KEY='...')
+    #+END_EXAMPLE
+
+*** Starting app
+- Export environment variables
+  - FLASK_APP = "app name or path"
+  - FLASK_DEBUG = true or false
+- Execute
+  #+BEGIN_SRC bash
+  flask run
+  #+END_SRC
+
+*** Database setup
+- To create a database connection we need to create a helper function
+  The first time the function is called, it will create a database connection for the current context,
+  and successive calls will return the already established connection:
+
+    e.g
+    #+BEGIN_SRC python
+      from flask import g
+      import sqlite3
+
+      def get_db():
+          """Opens a new database connection if there is none yet for the
+          current application context.
+          """
+          if not hasattr(g, 'sqlite_db'):
+              g.sqlite_db = sqlite3.connect(app.config['DATABASE'])
+          return g.sqlite_db
+    #+END_SRC
+
+  We close the db connection at context teardown.
+
+  e.g
+  #+BEGIN_SRC python
+    @app.teardown_appcontext
+    def close_db(error):
+        """Closes the database again at the end of the request."""
+        if hasattr(g, 'sqlite_db'):
+            g.sqlite_db.close()
+  #+END_SRC
+
+*** Flask CLI commands
+- The ~app.cli.command(<command name>)~ decorator registers a new command with the flask script
+- When the command executes, Flask will automatically create an application context which is bound to the right application
+
+  e.g
+  #+BEGIN_SRC python
+    @app.cli.command('hello')
+    def print_hello():
+        print('Hello World')
+  #+END_SRC
+
+  This command will then run by typing =flask hello= in terminal
+
+*** HTTP Routes
+- The ~app.route(<route path>)~ decorator in Flask is used to bind URL to a function
+
+  e.g
+  #+BEGIN_SRC python
+    @app.route('/hello')
+    def hello_world():
+       return 'hello world'
+  #+END_SRC
