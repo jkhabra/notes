@@ -1,0 +1,48 @@
+* Sessions
+ - Sessions allows us to store specific information to a user from one request to the next
+ - This is implemented on top of cookies for you and signs the cookies cryptographically
+   - This means is that the user could look at the contents of your cookie but not modify it
+   - Unless they know the secret key used for signing
+* Flask-Login
+ - Flask-Login provides user session management for Flask
+** Configuring Application
+ - The most important part of Flask-Login is the *LoginManager* class
+ - The login manager contains the code that lets our application and Flask-Login work together
+ - Once the application object has been created than we can configure it for login with
+   e.g
+   #+BEGIN_SRC python
+   login_manager = LoginManager()
+   login_manager.init_app(app)
+   #+END_SRC
+** user_loder (callback)
+ - This callable is used to reload the user object from the user ID stored in session
+ - It take the unicode ID of user and returns the corresponding user object
+   e.g
+   #+BEGIN_SRC python
+   @login_manager.user_loder
+   def load_user(user_id):
+       return User.get(user_id)
+   #+END_SRC
+ - If ID is not valid it should returns None not raise an exception
+** User Classes
+ - *UserMixin*: provides default implementation for all User Classes properties and methods
+ - *is_authenticated*: this property should return True if user is authenticated
+   - Only authenticated users will fulfill the criteria of login_required
+ - *is_active*: this property should return True if this is an active user
+ - *is_anonymous*: this property should return True if this is an anonymous user
+   - Actual users should return False instead
+ - *get_id()*: this method must return a unicode that uniquely identifies this user
+   - Can be used to load the user from the user_loader callback
+   - It should be unicode if its not we have to convert it to unicode
+** login_required decorated
+ - Views that require your users to be logged in can be decorated with the login_required decorator
+   e.g
+   #+BEGIN_SRC python
+   @app.route('/settings')
+   @login_required
+   def settings():
+    pass
+   #+END_SRC
+ - By default, when a user attempts to access a login_required view without being logged in
+   - Flask-Login will flash a message and redirect them to the log in view
+   - If the login view is not set, it will abort with a 401 error

@@ -1,0 +1,112 @@
+* How to create a app in Facebook
+source(https://developers.facebook.com/docs/apps/register)
+- For creating Facebook app we need to login in to developer account
+- Before creating a developer account, login in to your Facebook account
+- Choose Apps in the header navigation and select Add a New App or use the button below
+- Choose the platform you want to add
+- Choose a name for your app and select Create New Facebook App ID
+- You will use this ID whenever you use SDKs or Open Graph
+- Choose a category for your app
+- After that add additional settings
+  - If you want your app to be listed in app center, turn on the App Center Listed Platform setting for your website or mobile site
+  - Add icons, promotional images, and videos
+- Now Facebook apps exist in development mode by default. This limits published actions and related objects
+  - Once your application is ready for public use you can switch from development mode to public mode
+  - That allows your app to interact with Facebook accounts not associated with your app
+- *In Developer mode* App can be used only be app admin, app developers and test users
+
+** What is facebook for developers
+- The Facebook Platform is an umbrella term used to describe the set of services, tools, and products
+  provided by the social networking service Facebook
+- It is for third-party developers to create their own applications and services that access data in Facebook
+
+* Facebook API and GraphAPI
+
+** Access Token
+- When someone connects with an app using Facebook Login
+  - The app will be able to obtain an access token
+  - Which provides temporary, secure access to Facebook APIs
+- An access token is an opaque string that identifies a user, app, or Page
+- It can be used by the app to make graph API calls
+- The token includes information about when the token will expire
+  and which app generated the token
+- The majority of API calls on Facebook need to include an access token
+- There are different types of access tokens to support different use cases
+
+*** User access token
+- The user token is commonly used type of token
+- It needed any time the app calls an API to read, modify or write a specific person's Facebook data on their behalf
+- User access tokens are generally obtained via a login dialog
+- It require a person to permit your app to obtain one
+
+*** App access token
+- This token is needed to modify and read the app settings
+- It can also be used to publish Open Graph actions
+- It is generated using a pre-agreed secret between the app and Facebook
+   is then used during calls that change app-wide settings
+- You obtain an app access token via a server-to-server call
+
+*** Page access token
+- These tokens are similar to user access tokens,
+  except that they provide permission to APIs that read, write or modify the data belonging to a Facebook Page
+- To obtain a page access token you need to obtain a user access token
+  - Asking for the manage_pages permission
+  - Once you have the user access token you then get the page access token via the Graph API
+
+*** Client token
+- It is an identifier that you can embed into native mobile binaries or desktop apps to identify your app
+- The client token isn't meant to be a secret identifier because it's embedded in apps
+- The client token is used to access app-level APIs, but only a very limited subset
+- The client token is found in your app's dashboard and it is used rarely
+
+** Graph API
+ - The Graph API is the primary way to get data out of, and put data into, Facebook's platform
+ - It's a low-level HTTP-based API that you can use to programmatically query data, post new stories, manage ads, upload photos
+ - Perform a variety of other tasks that an app might implement
+ - It is named after the idea of a 'social graph'
+  - This represents the information of which Facebook is composed of:
+   1. *nodes*: basically "things" such as a User, a Photo, a Page, a Comment
+   2. *edges*: the connections between those "things", such as a Page's Photos, or a Photo's Comments
+   3. *fields*: info about those "things", such as a person's birthday, or the name of a Page
+ - The Graph API is HTTP-based, so it works with any language that has an HTTP library
+ - Almost all requests are passed to the API at graph.facebook.com - the single exception is video uploads which use graph-video.facebook.com
+
+*** Object ids
+- Each node has a unique ID which is used to access it via the Graph API
+  e.g
+  #+BEGIN_SRC python
+  # use the ID to make a request for a node
+  GET graph.facebook.com
+  /{node-id}
+
+  # use the ID to make a request for a edge
+  GET graph.facebook.com
+  /{node-id}/{edge-name}
+
+  # publish to APIs by making HTTP POST requests with parameters to the node
+  Post graph.facebook.com
+  me/feed?
+  message="Hello, World."&amp;
+  access_token={your-access-token}
+
+  #+END_SRC
+- All nodes and edges in the Graph API can be read simply with an HTTP GET request to the relevant endpoint
+- The ~/me~ node is a special endpoint that translates to the user_id of the person (or the page_id of the Facebook Page)
+  e.g
+  #+BEGIN_EXAMPLE
+  GET graph.facebook.com
+  /me/photos
+  #+END_EXAMPLE
+- By default, not all fields in a node or edge are returned when you make a query
+- You can choose the fields or edges that you want returned with the fields query parameter
+- This is really useful for making your API calls more efficient and fast
+  - This Graph API call https://graph.facebook.com/bgolub?fields=id,name,picture will only return the id, name, and picture in Ben's profile
+    e.g
+    #+BEGIN_EXAMPLE
+    GET graph.facebook.com
+    /bgolub?
+      fields=id,name,picture
+    #+END_EXAMPLE
+
+* Build a Login Flow
+- https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
