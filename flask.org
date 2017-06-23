@@ -46,3 +46,450 @@
  - By default, when a user attempts to access a login_required view without being logged in
    - Flask-Login will flash a message and redirect them to the log in view
    - If the login view is not set, it will abort with a 401 error
+* Flask Blueprints
+** What is blueprints
+ - A blueprint defines a collection of views, templates, static files and other elements that can be applied to an application
+   - For example, let’s imagine that we have a blueprint for an admin panel
+     - This blueprint would define the views for routes like /admin/login and /admin/dashboard
+     - It may also include the templates and static files that will be served on those routes
+ - Blueprints instead provide separation at the Flask level, share application config
+   - Can change an application object as necessary with being registered
+   - The downside is that you cannot unregister a blueprint once an application was created without having to destroy the whole application object
+** The concept of blueprints
+ - The basic concept of blueprints is that they record operations to execute when registered on an application
+ - Flask associates view functions with blueprints when dispatching requests and generating URLs from one endpoint to another
+** Basic blueprint
+ e.g
+ #+BEGIN_SRC python
+from flask import Blueprint, render_template, abort
+from jinja2 import TemplateNotFound
+
+simple_page = Blueprint('simple_page', __name__,
+                        template_folder='templates')
+
+@simple_page.route('/', defaults={'page': 'index'})
+@simple_page.route('/<page>')
+def show(page):
+    try:
+        return render_template('pages/%s.html' % page)
+    except TemplateNotFound:
+        abort(404)
+ #+END_SRC
+** Registering Blueprints
+- e.g
+  #+BEGIN_SRC python
+from flask import Flask
+from yourapplication.simple_page import simple_page
+
+app = Flask(__name__)
+app.register_blueprint(simple_page)
+  #+END_SRC
+- Blueprints can also be mounted at different locations
+  e.g
+  #+BEGIN_SRC pyhton
+  app.register_blueprint(simple_page, url_prefix='/pages')
+  #+END_SRC
+- These are the generated rules
+  e.g
+  #+BEGIN_SRC python
+  [<Rule '/static/<filename>' (HEAD, OPTIONS, GET) -> static>,
+  <Rule '/pages/<page>' (HEAD, OPTIONS, GET) -> simple_page.show>,
+  <Rule '/pages/' (HEAD, OPTIONS, GET) -> simple_page.show>]
+  #+END_SRC
+** Building URLs
+- If we want to link from one page to another we can use the url_for() function
+- just like you normally would do just that you prefix the URL endpoint with the name of the blueprint and a dot (.)
+  e.g
+  #+BEGIN_SRC python
+  url_for('admin.index')
+  #+END_SRC
+- If we are in a view function of a blueprint or a rendered template and we want to link to another endpoint of the same blueprint
+  - We can use relative redirects by prefixing the endpoint with a dot only:
+    #+BEGIN_SRC python
+    url_for('.index')
+    #+END_SRC
+** Error Handlers
+- Blueprints support the errorhandler decorator just like the Flask application object, so it is easy to make Blueprint-specific custom error pages
+  e.g
+  #+BEGIN_SRC python
+  simple_page.errorhandler(404) # 404 Page Not Found” exception:
+  def page_not_found(e):
+    return render_template('pages/404.html')
+  #+END_SRC
+* TODOS
+** Make app run with gunicorn
+*** End Goal
+- App should be accessible locally at localhost:8000
+** Make app work with nginx
+*** End Goal
+- App should be accessible globally at 192.168.1.7
+* Deploying python apps
+** Main steps to deploy flask app
+- Install operating system on host
+- Install gunicorn and nginx
+  #+BEGIN_SRC sh
+  sudo yum install gunicorn nginx
+  #+END_SRC
+
+- Clone git repository on host
+  - If git repository is private, ssh keys used uploaded on remote need to be present on the host
+    - copy ssh key with the help of =scp=
+      #+BEGIN_SRC sh
+      # on development machine which already has keys used on git remote
+      scp ~/.ssh/id_rsa.pub gaggu@remote_address:~/.ssh/ # gaggu is remote user
+      #+END_SRC
+
+  - ssh to remote server and clone the project repository there
+    #+BEGIN_SRC sh
+    ssh user@server
+    git clone <my_project remote url>
+    #+END_SRC
+
+- Create a virtualenv for this project
+  - Install virtualenvwrapper with pip
+
+    #+BEGIN_EXAMPLE sh
+    pip install virtualenvwrapper
+    #+END_EXAMPLE
+
+  - Configure virtualenvwrapper environment variables in .zshrc or .bashrc file
+
+    #+BEGIN_EXAMPLE sh
+    export PATH=/usr/local/bin:$PATH
+
+    export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+    export WORKON_HOME=~/.virtualenvs
+    source /usr/local/bin/virtualenvwrapper.shv
+    #+END_EXAMPLE
+
+  - Create virtualenv for project
+    #+BEGIN_EXAMPLE sh
+    mkvirtualenv myprojectEnv
+    workon myprojectEnv
+    #+END_EXAMPLE
+
+- Install project dependencies from requirements.txt file
+  #+BEGIN_SRC sh
+  cd ~/my_project
+  pip install -r ./
+  #+END_SRC
+
+** nginx
+- nginx is a free, open-source HTTP server and reverse proxy
+
+  - *Reverse Proxy*: is a type of proxy server that retrieves resources on behalf of a client from one or more servers
+    - These resources are then returned to the client like they originated from the Web server itself
+
+- It is known for its high performance, stability, rich feature set, simple configuration and low resource consumption
+- It is one of a handful of servers written to address the C10K problem
+
+  - *C10K problem*: refers to the inability of a server to scale beyond 10,000 connections or clients due to resource exhaustion
+    - Servers that employ the thread-per-client model
+
+- AS compared to other servers, nginx does not rely on threads to handle requests
+  - Instead it uses a much more scalable event-driven (asynchronous) architecture
+  - This architecture uses small, but more importantly, predictable amounts of memory under load
+
+*** Configuring nginx
+source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
+
+- All nginx configuration files are located in the /etc/nginx/ directory
+- The primary configuration file is /etc/nginx/nginx.conf
+- When we make a change to the nginx.conf file, we need to ~reload~ it so the change will take effect
+  #+BEGIN_SRC sh
+  service nginx reload
+  #+END_SRC
+
+**** What is a directive?
+- Directives are divided into =simple= directives and =block= directives
+- A =simple= directive consists of the name and parameters separated by spaces and ends with a semicolon (;)
+- A =block= directive has the same structure as a =simple= directive, but instead of the semicolon it ends with a set of braces ({ and })
+- If a =block= directive can have other directives inside braces, it is called a context
+  - examples: events, http, server, and location
+
+**** Defining the Directives
+- This is the first directive in etc/nginx/nginx.conf
+  e.g
+  #+BEGIN_EXAMPLE conf
+  user www-data;  # User under which the server process will run
+  worker_processes 4;
+  pid /run/nginx.pid;
+
+  events {
+    worker_connections 768;
+    multi_accept on;
+  }
+  #+END_EXAMPLE
+
+***** Common Directives
+- *user*: Defines the user which will own and run nginx server
+- *worker_processes*: defines how many threads, or simultaneous instances of nginx to run
+- *pid*: defines where nginx will write its master process ID, or PID
+  - The PID is used by the operating system to keep track of and send signals to the nginx process
+
+****** http (Universal Configuration)
+- HTTP is a block directive in nginx.conf file. It handles HTTP web traffic
+  e.g
+  #+BEGIN_EXAMPLE conf
+  http {
+    ##
+    # Basic Settings
+    ##
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    # server_tokens off;
+
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
+
+    include /etc/nginx/mime.types;
+    include /etc/nginx/sites-enabled/*;
+    default_type application/octet-stream;
+
+    ##
+    # Gzip Settings
+    ##
+
+    gzip on;
+    gzip_disable "msie6";
+  #+END_EXAMPLE
+
+  Most of the =http { }= block should work as-is for most nginx configurations. There are some configurations we can do:
+
+  - *include*: Includes another file, or files matching the specified mask, into configuration.
+    Included files should consist of syntactically correct directives and blocks.
+  - *gzip*: directive tells the server to use on-the-fly gzip compression to limit the amount of bandwidth used
+    and speed up some transfers
+    - If you keep gzip compression enabled then you are trading increased CPU costs in exchange for your lower bandwidth use
+    - Set the =gzip_comp_level= to a value between 1 and 9 where 9 is the greatest amount of CPU resources and 1 is least
+      The default value is 1
+
+****** server (Virtual Domains Configuration)
+- The HTTP block of the nginx.conf file contains the simple directive =include /etc/nginx/sites-enabled/*;=
+- This allows for ~server~ block configurations to be loaded in from separate files found in the =sites-enabled= sub-directory
+- Usually these symlinks to file stored in =/etc/nginx/sites_available/=
+- With symlinks we can quickly enable or disable a virtual server while preserving its configuration file
+
+- Nginx provides a single default virtual host file, which can be used as a template to create virtual host files for other domains
+  e.g
+  #+BEGIN_EXAMPLE
+  cp /etc/nginx/sites-available/default /etc/nginx/sites-available/example.com
+  #+END_EXAMPLE
+- The server block in =/etc/nginx/sites-available/default=
+  These are the default settings of server block
+   #+BEGIN_SRC conf
+   server {
+     listen 80 default_server;
+     listen [::]:80 default_server ipv6only=on;
+
+     root /usr/share/nginx/html;
+     index index.html index.htm;
+
+     # Make site accessible from http://localhost/
+     server_name localhost;
+
+     location / {
+       # First attempt to serve request as file, then
+       # as directory, then fall back to displaying a 404.
+       try_files $uri $uri/ /index.html;
+       # Uncomment to enable naxsi on this location
+       # include /etc/nginx/naxsi.rules
+       }
+     }
+  #+END_SRC
+
+- The server block is where the typical nginx user will make most of the changes to the default configuration
+- We’ll want to make a separate file with its own server block for each virtual domain on our server
+
+- *listen*: directive in the server block tells nginx the hostname/IP and the TCP port where it should listen for HTTP connections
+- By default, nginx will listen for HTTP connections on port 80
+- We can use more than one listen directive, if needed
+  - Examples
+    - File: =/etc/nginx/sites-available/example.com=
+      #+BEGIN_EXAMPLE conf
+      listen     127.0.0.1:80;
+      listen     localhost:80;
+      #+END_EXAMPLE
+      - These two examples direct nginx to listen on 127.0.0.1; that is, the local loopback interface
+      - localhost is conventionally set as the hostname for 127.0.0.1 in /etc/hosts
+
+    - File: =/etc/nginx/sites-available/example.com=
+      #+BEGIN_SRC conf
+      listen     127.0.0.1:8080;
+      listen     localhost:808
+      #+END_SRC
+      - This pair of examples also listen on localhost, but they listen for responses on port 8080 instead of port 80
+
+    - File: =/etc/nginx/sites-available/example.com=
+      #+BEGIN_SRC conf
+      listen     192.168.3.105:80;
+      listen     192.168.3.105:8080;
+      #+END_SRC
+      - This pair of examples specify a server listening for requests on the IP address 192.168.3.105
+      - The first listens on port 80 and the second on port 8080
+
+    - File: =/etc/nginx/sites-available/example.com=
+      #+BEGIN_SRC conf
+      listen     80;
+      listen     *:80;
+      listen     8080;
+      listen     *:8080
+      #+END_SRC
+      - This set of examples tell nginx to listen on all domains and IP addresses on a specific port
+      - listen 80; is equivalent to listen *:80;, and listen 8080; is equivalent to listen *:8080;.
+
+- =server_name= directive located in the =server= block provides name-based virtual hosting
+- The server decides which domain to serve based on the =Host= request header  it receives
+- We'll want to make one file per domain and its host to our server
+  - Each file should have its own =server= block, and the =server_name= directive is where we specify which domain this file affects
+- Examples
+  - File: =/etc/nginx/sites-available/example.com=
+    #+BEGIN_SRC conf
+    server_name   example.com;
+    #+END_SRC
+    - The example above directs nginx to process requests for example.com. This is the most basic configuration
+
+  - File: =/etc/nginx/sites-available/example.com=
+    #+BEGIN_SRC conf
+    server_name   example.com www.example.com;
+    #+END_SRC
+    - This example instructs the server to process requests for both example.com and www.example.com
+
+  - File: =/etc/nginx/sites-available/example.com=
+    #+BEGIN_SRC conf
+    server_name   *.example.com;
+    server_name   .example.com;
+    #+END_SRC
+    - These two examples are equivalent. *.example.com and .example.com both instruct the server to process requests
+      for all subdomains of example.com, including www.example.com, foo.example.com, etc
+
+  - File: =/etc/nginx/sites-available/example.com=
+    #+BEGIN_SRC conf
+    server_name   example.*;
+    #+END_SRC
+    - This example instructs the server to process requests for all domain names beginning with example., including
+      example.com, example.org, example.net, example.foo.com, etc.
+
+  - File: =/etc/nginx/sites-available/multi-list=
+    #+BEGIN_SRC conf
+    server_name   example.com linode.com icann.org
+    #+END_SRC
+    - This example instructs the server to process requests for three different domain names
+
+  - File: =/etc/nginx/sites-available/local=
+    #+BEGIN_SRC conf
+    server_name   localhost linode galloway;
+    #+END_SRC
+    - Nginx allows to specify names for virtual hosts that are not valid domain names
+    - Nginx uses the name from the HTTP header to answer requests; so it does not matter whether the domain name is valid or not
+    - In this case, the hostames can be specified in the =/etc/hosts file=
+
+  - File: =/etc/nginx/sites-available/catchall=
+    #+BEGIN_SRC conf
+    server_name "";
+    #+END_SRC
+    - If we set server_name to the empty quote,  nginx will process all requests that either do not have a hostname, or that
+      have an unspecified hostname, such as requests for the IP address itself
+
+****** access_logs
+- The =access_log= directive can be set in the http block in nginx.conf or in the server block for a specific virtual domain
+- It sets the location of the nginx access logs
+- If we defines the access log to a different path in each server block, we can sort the output specific to each virtual domain into its own file
+  e.g
+  File: =/etc/nginx/nginx.conf=
+  #+BEGIN_SRC conf
+  access_log logs/example.access.log;
+  access_log off; # it can be disable, although this is not recommended
+  #+END_SRC
+
+****** location (File and Folder Configuration)
+- The location setting lets us configure how nginx will respond to requests for resources within the =server=
+- It is like the =server_name= directive tells nginx how to process requests for the domain, such as http://example.com,
+  the =location= directive covers requests for specific files and folders, such as http://example.com/blog/
+****** proxy_pass
+- The =proxy_pass= directive is specified inside a location
+  e.g
+  #+BEGIN_SRC conf
+  location /some/path/ {
+      proxy_pass http://www.example.com/link/;
+   }
+  #+END_SRC
+- =proxy_pass= sets the protocol and address of a proxied server and an optional URI to which a location should be mapped
+- http or https protocol can be specified
+- The address can be specified as a domain name or IP address, and an optional port:
+  #+BEGIN_SRC conf
+  proxy_pass http://localhost:8000/uri/;
+  # UNIX-domain socket path specified after the word “unix” and enclosed in colons:
+  proxy_pass http://unix:/tmp/backend.socket:/uri/;
+  #+END_SRC
+
+****** proxy_set_header
+- By default, NGINX redefines two header fields in proxied requests, “Host” and “Connection”, and
+  eliminates the header fields whose values are empty strings
+- “Host” is set to the =$proxy_host= variable, and “Connection” is set to close
+- If we want to change these settings, as well as modify other header fields then use the =proxy_set_header=
+
+- *proxy_set_header*: allows redefining or appending fields to the request header passed to the proxied server
+  - The value can contain text, variables, and their combinations
+- It can be specified in a =location= or higher
+- It can also be specified in a particular =server= context or in the =http= block
+  e.g
+  #+BEGIN_SRC conf
+  location /some/path/ {
+    proxy_set_header Host $host; # Host field is set to the $host variable
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_pass http://localhost:8000;
+  }
+  #+END_SRC
+- To prevent a header field from being passed to the proxied server, set it to an empty string
+
+
+
+****** proxy_bind
+- proxy_bind is used for when we need to choose a particular source IP address for connecting to a proxied server or an upstream
+  e.g
+  #+BEGIN_SRC conf
+  location /app1/ {
+    proxy_bind 127.0.0.1;
+    proxy_pass http://example.com/app1/;
+  }
+
+  location /app2/ {
+    proxy_bind 127.0.0.2;
+    proxy_pass http://example.com/app2/;
+  }
+  #+END_SRC
+- The IP address can be also specified with a variable
+
+
+*** Set up nginx as reverse proxy server
+- Create a new virtual host (i.e file in /etc/nginx/sites_available)
+- Add =server_name= directive in =server= block to tell nginx requests for which host to capture
+- Use [[*proxy_pass][proxy_pass block directive]] in =location= directive block to tell nginx where to send the requests for proxied host
+
+** Gunicorn
+- The Gunicorn "Green Unicorn" is a Python Web Server Gateway Interface (WSGI) HTTP server
+- It is a pre-fork worker model, ported from Ruby's Unicorn project
+- The Gunicorn server is broadly compatible with a number of web frameworks, simply implemented, light on server resources and fairly fast
+
+*** How to use it
+ - Gunicorn need a module which imports the flask app instance
+   e.g
+   #+BEGIN_SRC sh
+   gunicorn --bind 0.0.0.0:8000 run:app # run is python module and app is flask instance
+   #+END_SRC
+
+*** TODO Why we use Gunicorn?
+
+** SELinux policies
+RHEL based linux distributions like Fedora, RHEL, CentOS use SELinux for extra security policies.
+These policies can cause a lot of access problems when someone new to SELinux try to configure the
+operating system for purposes like web servers.
+
+Following steps can be taken as easy work-through while configuring a server on SELinux based distribution:
+
+- audit2allow
