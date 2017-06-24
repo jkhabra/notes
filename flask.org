@@ -193,9 +193,9 @@ app.register_blueprint(simple_page)
 *** Configuring nginx
 source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
 
-- All nginx configuration files are located in the /etc/nginx/ directory
-- The primary configuration file is /etc/nginx/nginx.conf
-- When we make a change to the nginx.conf file, we need to ~reload~ it so the change will take effect
+- All nginx configuration files are located in the =/etc/nginx/= directory
+- The primary configuration file is =/etc/nginx/nginx.conf=
+- When we make a change to the =nginx.conf= file, we need to ~reload~ it so the change will take effect
   #+BEGIN_SRC sh
   service nginx reload
   #+END_SRC
@@ -203,12 +203,12 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
 **** What is a directive?
 - Directives are divided into =simple= directives and =block= directives
 - A =simple= directive consists of the name and parameters separated by spaces and ends with a semicolon (;)
-- A =block= directive has the same structure as a =simple= directive, but instead of the semicolon it ends with a set of braces ({ and })
-- If a =block= directive can have other directives inside braces, it is called a context
+- A =block= directive has the same structure as a =simple= directive, but it ends with a set of braces ({})
+- If a =block= directive have other directives inside braces, it is called a =context=
   - examples: events, http, server, and location
 
 **** Defining the Directives
-- This is the first directive in etc/nginx/nginx.conf
+- This is the first directive in =etc/nginx/nginx.conf=
   e.g
   #+BEGIN_EXAMPLE conf
   user www-data;  # User under which the server process will run
@@ -228,7 +228,7 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   - The PID is used by the operating system to keep track of and send signals to the nginx process
 
 ****** http (Universal Configuration)
-- HTTP is a block directive in nginx.conf file. It handles HTTP web traffic
+- =HTTP= is a =block= directive in =nginx.conf= file. It handles HTTP web traffic
   e.g
   #+BEGIN_EXAMPLE conf
   http {
@@ -260,20 +260,16 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
 
   Most of the =http { }= block should work as-is for most nginx configurations. There are some configurations we can do:
 
-  - *include*: Includes another file, or files matching the specified mask, into configuration.
-    Included files should consist of syntactically correct directives and blocks.
-  - *gzip*: directive tells the server to use on-the-fly gzip compression to limit the amount of bandwidth used
+  - *include*: Includes another file, or files matching the specified mask, into configuration
+  - *gzip*: directive tells the server to use on-the-fly =gzip= compression to limit the amount of bandwidth used
     and speed up some transfers
-    - If you keep gzip compression enabled then you are trading increased CPU costs in exchange for your lower bandwidth use
+    - If we keep =gzip= compression enabled then we are trading increased CPU costs in exchange for your lower bandwidth use
     - Set the =gzip_comp_level= to a value between 1 and 9 where 9 is the greatest amount of CPU resources and 1 is least
       The default value is 1
 
 ****** server (Virtual Domains Configuration)
-- The HTTP block of the nginx.conf file contains the simple directive =include /etc/nginx/sites-enabled/*;=
-- This allows for ~server~ block configurations to be loaded in from separate files found in the =sites-enabled= sub-directory
-- Usually these symlinks to file stored in =/etc/nginx/sites_available/=
-- With symlinks we can quickly enable or disable a virtual server while preserving its configuration file
-
+- The server block is where the typical nginx user will make most of the changes to the default configuration
+- We’ll want to make a separate file with its own server block for each virtual domain on our server
 - Nginx provides a single default virtual host file, which can be used as a template to create virtual host files for other domains
   e.g
   #+BEGIN_EXAMPLE
@@ -302,10 +298,7 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
      }
   #+END_SRC
 
-- The server block is where the typical nginx user will make most of the changes to the default configuration
-- We’ll want to make a separate file with its own server block for each virtual domain on our server
-
-- *listen*: directive in the server block tells nginx the hostname/IP and the TCP port where it should listen for HTTP connections
+- *listen*: directive in the =server block= tells nginx the hostname/IP and the TCP port where it should listen for HTTP connections
 - By default, nginx will listen for HTTP connections on port 80
 - We can use more than one listen directive, if needed
   - Examples
@@ -343,7 +336,7 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
       - listen 80; is equivalent to listen *:80;, and listen 8080; is equivalent to listen *:8080;.
 
 - =server_name= directive located in the =server= block provides name-based virtual hosting
-- The server decides which domain to serve based on the =Host= request header  it receives
+- The server decides which domain to serve based on the =Host= request header it receives
 - We'll want to make one file per domain and its host to our server
   - Each file should have its own =server= block, and the =server_name= directive is where we specify which domain this file affects
 - Examples
@@ -396,9 +389,10 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
       have an unspecified hostname, such as requests for the IP address itself
 
 ****** access_logs
-- The =access_log= directive can be set in the http block in nginx.conf or in the server block for a specific virtual domain
+- The =access_log= directive can be set in the =http= block in =nginx.conf= or in the =server= block for a specific virtual domain
 - It sets the location of the nginx access logs
-- If we defines the access log to a different path in each server block, we can sort the output specific to each virtual domain into its own file
+- If we defines the access log to a different path in each =server= block, we can sort the output specific
+  to each virtual domain into its own file
   e.g
   File: =/etc/nginx/nginx.conf=
   #+BEGIN_SRC conf
@@ -407,7 +401,7 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   #+END_SRC
 
 ****** location (File and Folder Configuration)
-- The location setting lets us configure how nginx will respond to requests for resources within the =server=
+- The =location=  lets us configure how nginx will respond to requests for resources within the =server=
 - It is like the =server_name= directive tells nginx how to process requests for the domain, such as http://example.com,
   the =location= directive covers requests for specific files and folders, such as http://example.com/blog/
 ****** proxy_pass
@@ -428,10 +422,10 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   #+END_SRC
 
 ****** proxy_set_header
-- By default, NGINX redefines two header fields in proxied requests, “Host” and “Connection”, and
+- By default, NGINX redefines two header fields in proxied requests, =Host= and =Connection=, and
   eliminates the header fields whose values are empty strings
-- “Host” is set to the =$proxy_host= variable, and “Connection” is set to close
-- If we want to change these settings, as well as modify other header fields then use the =proxy_set_header=
+- =Host= is set to the =$proxy_host= variable, and =Connection= is set to close
+- If we want any modification then use the =proxy_set_header=
 
 - *proxy_set_header*: allows redefining or appending fields to the request header passed to the proxied server
   - The value can contain text, variables, and their combinations
@@ -447,10 +441,8 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   #+END_SRC
 - To prevent a header field from being passed to the proxied server, set it to an empty string
 
-
-
 ****** proxy_bind
-- proxy_bind is used for when we need to choose a particular source IP address for connecting to a proxied server or an upstream
+- proxy_bind is used to choose a particular source IP address for connecting to a proxied server or an upstream
   e.g
   #+BEGIN_SRC conf
   location /app1/ {
@@ -464,7 +456,6 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   }
   #+END_SRC
 - The IP address can be also specified with a variable
-
 
 *** Set up nginx as reverse proxy server
 - Create a new virtual host (i.e file in /etc/nginx/sites_available)
@@ -483,7 +474,6 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
    gunicorn --bind 0.0.0.0:8000 run:app # run is python module and app is flask instance
    #+END_SRC
 
-*** TODO Why we use Gunicorn?
 
 ** SELinux policies
 RHEL based linux distributions like Fedora, RHEL, CentOS use SELinux for extra security policies.
@@ -492,4 +482,31 @@ operating system for purposes like web servers.
 
 Following steps can be taken as easy work-through while configuring a server on SELinux based distribution:
 
-- audit2allow
+- *audit2allow*: scans the logs for messages logged when the system denied permission for operations and generates a snippet of policy rules
+- How to install audit2allow?
+    #+BEGIN_SRC conf
+    yum install policycoreutils-devel # audit2allow should be in the /usr/bin directory
+    #+END_SRC
+
+- What are SELinux policies?
+  - SELinux policies are set of rules those guide the security engine
+  - It defines types for file objects and domains for processes, uses roles to limit the domains that can be entered
+  - A domain is what a type is called when it is applied to a process
+
+- How to use audit2allow to update SELinux policies for a program
+  - If we want to check which permission is denied then use =audit2allow -w -a= command
+    it produce a description of why access was denied
+  - For making custom module
+    #+BEGIN_SRC conf
+    audit2allow -a -M policie
+    #+END_SRC
+  - =-M= option creates a Type Enforcement file (.te)  with the name specified with -M, in your current working directory
+  - =audit2allow= compiles the Type Enforcement rule into a policy package (.pp)
+  - If we have multiple denials from multiple processes but only want to create a custom policy for a single process use the =grep= command
+    #+BEGIN_SRC conf
+    grep nginx /var/log/audit/audit.log | audit2allow -M policies
+    #+END_SRC
+  - To make this policy package active execute this command
+    #+BEGIN_SRC conf
+    semodule -i policies.pp
+    #+END_SRC
