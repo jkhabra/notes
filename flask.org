@@ -139,6 +139,13 @@ app.register_blueprint(simple_page)
       scp ~/.ssh/id_rsa.pub gaggu@remote_address:~/.ssh/ # gaggu is remote user
       #+END_SRC
 
+    - For =scp= first enable it
+      #+BEGIN_SRC
+      systemctl enable sshd
+      # then
+      systemctl start sshd
+      #+END_SRC
+
   - ssh to remote server and clone the project repository there
     #+BEGIN_SRC sh
     ssh user@server
@@ -159,7 +166,7 @@ app.register_blueprint(simple_page)
 
     export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
     export WORKON_HOME=~/.virtualenvs
-    source /usr/local/bin/virtualenvwrapper.shv
+    source /usr/local/bin/virtualenvwrapper.sh
     #+END_EXAMPLE
 
   - Create virtualenv for project
@@ -173,6 +180,7 @@ app.register_blueprint(simple_page)
   cd ~/my_project
   pip install -r ./
   #+END_SRC
+
 
 ** nginx
 - nginx is a free, open-source HTTP server and reverse proxy
@@ -274,6 +282,8 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
   e.g
   #+BEGIN_EXAMPLE
   cp /etc/nginx/sites-available/default /etc/nginx/sites-available/example.com
+  and
+  sudo ln -s /etc/nginx/sites-available/exmple.com /etc/nginx/sites-enabled/
   #+END_EXAMPLE
 - The server block in =/etc/nginx/sites-available/default=
   These are the default settings of server block
@@ -473,6 +483,10 @@ source = https://www.linode.com/docs/web-servers/nginx/how-to-configure-nginx
    #+BEGIN_SRC sh
    gunicorn --bind 0.0.0.0:8000 run:app # run is python module and app is flask instance
    #+END_SRC
+ - Hosting an app by binding a socket as a file with Gunicorn
+   #+BEGIN_SRC conf
+   gunicorn --bind unix:apps/path.sock app:run
+   #+END_SRC
 
 
 ** SELinux policies
@@ -510,3 +524,89 @@ Following steps can be taken as easy work-through while configuring a server on 
     #+BEGIN_SRC conf
     semodule -i policies.pp
     #+END_SRC
+
+** How to give change the file permission
+ - With the help of =chown= we can change the files permissions
+   e.g
+   #+BEGIN_SRC conf
+   chown -R someuser:somegroup /your/folder/here/*
+   #+END_SRC
+
+
+* Supervisor
+** What is supervisor
+ - Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems
+ - If process dies or gets killed for any reason, it restart the process
+
+ - How to install supervisor
+   e.g
+   #+BEGIN_SRC sh
+   pip install supervisor
+   #+END_SRC
+** Configuration of supervisor
+ - The Supervisor configuration file is =supervisord.conf=
+ - We’ll need to add  one program section to its configuration
+ - To add a program, we’ll need to edit the =supervisord.conf file=
+   e.g
+   #+BEGIN_SRC conf
+   [program:gunicorn]
+   directory=/var/www/looper-apps/
+   command=/home/gaggu/.virtualenvs/looper/bin/gunicorn --bind unix:/var/www/looper-apps/run.sock run:app
+   # We need to change command and directory depending on your environment
+   #+END_SRC
+ - We passed looper-apps as app object to gunicorn, so looper-apps need to be available on right PATH for this to work
+ - That's why we need the directory setting inside program section
+ - For run supervisor
+   #+BEGIN_SRC sh
+   (PythonEnv)/tmp/testproj $ supervisord
+   # Now supervisor process and gunicorn process should be running
+   # Even we did not start a gunicorn process, supervisor started gunicorn for us
+
+   # Verify that supervisor as well as gunicorn process exists
+   (PythonEnv)/tmp/testproj $ ps aux | grep supervisord
+   (PythonEnv)/tmp/testproj $ ps aux | grep gunicorn
+   #+END_SRC
+ - Change =nodaemon=true= into false
+   - So supervisor should not running in foreground
+ - We have a =pidfile= option, which tells the file which stores process id of supervisor
+   #+BEGIN_SRC sh
+   (PythonEnv)/tmp/testproj $ cat /tmp/supervisord.pid
+   9820
+   # This killed the exising supervisor process
+   (PythonEnv)/tmp/testproj $ kill -9 9820
+   #+END_SRC
+ - For verify that gunicorn process was started, use =supervisorctl=
+  #+BEGIN_SRC sh
+   (PythonEnv)/tmp/testproj $ supervisorctl
+   # it should tell us that process for gunicorn is being managed by supervisor
+   # for restart gunicorn
+   supervisor> restart gunicorn
+   #+END_SRC
+
+* Deployment
+ - Install git in remote server
+ - Set up a bare Git repo, so that we can push
+   e.g
+   #+BEGIN_SRC sh
+   sudo mkdir /home/git && cd /home/git
+   sudo mkdir flask_project.git && cd flask_project.git
+   sudo git init --bare
+   #+END_SRC
+ - Adding this to our bash profile on production, so it remind where you are in terminal
+   #+BEGIN_SRC sc
+   parse_git_branch() {
+   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+   }
+   export PS1="\u@\h \W\[\033[32m\]\$(parse_git_branch)\[\033[00m\] $ "
+   #+END_SRC
+ - Use =sudo nano hooks/post-receive= command to configure the post-receive hooks and add this
+   e.g
+   #+BEGIN_SRC conf
+   #!/bin/sh
+   GIT_WORK_TREE=/home/www/flask_project git checkout -f
+   #+END_SRC
+ - Make file executable with =chmod=
+   e.g
+   #+BEGIN_SRC sh
+   sudo chmod +x hooks/post-receive
+   #+END_SRC
