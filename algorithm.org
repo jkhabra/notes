@@ -1,0 +1,13 @@
+* Pathfinding
+** What is pathfinding algorithm
+ - *Pathfinding algorithm*: is to find the shortest route between two points
+ - Its more practical variant on mazes solving games such as pac-man
+ - It is closely related to =shortest path problem= with-in =graph tehory=
+   - *Graph tehory*: examines how to identify the path that best meets some criteria
+     (shortest, cheapest, fastest, etc) between two points in a large network
+ - Pathfinding algorithm's shortest finding path ability is heavily based on =Dijkstra's algorithm=
+ - *Dijkstra's algorithm*: is for finding the shortest path from a starting node to a target node in a weighted graph
+   - It creates a tree of shortest paths from the starting vertex, the source, to all other points in the graph
+** How to implement
+source(http://www.redblobgames.com/pathfinding/a-star/implementation.html)
+ - Did not understand how to implement
