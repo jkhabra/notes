@@ -1,3 +1,33 @@
+* Binary Trees
+** What is binary tree
+- *Binary Tree*: is made of nodes and every node can have a maximum of 2 children
+  - One is known as left child and the other is known as right child
+- The topmost node in the tree is called root
+- Every node in a tree is connected by a directed edge from exactly one other node
+  - This node is called a parent
+- Nodes with the same parent are called siblings
+- There are different types of binary trees and they are
+  - *Strictly Binary Tree*: is which every node has either two or zero number of children
+    - It is also called as =Full Binary Tree= or =Proper Binary Tree= or =2-Tree=
+  - *Complete Binary Tree*: is which every internal node has exactly two children and all leaf nodes are at same level
+    - It is also called as =Perfect Binary Tree=
+  - *Extended Binary Tree*: The full binary tree obtained by adding dummy nodes to a binary tree is called as Extended Binary Tree
+** Traversals
+- *Traversals*: is a process that visits all the nodes in the tree
+- Binary tree is a nonlinear data structure, so there is no unique traversal
+- There are two traversal algorithms
+**** Depth-first traversal (DGS)
+- (DFS) algorithm traverses a graph in a depthward motion and uses a stack to remember to get the next vertex to start a search
+   when a dead end occurs in any iteration
+- There are three different types of =depth-first= traversals:
+  - *Pre-Order traversal*: visit the parent first and then left and right children
+  - *In-Order traversal*: visit the left child, then the parent and the right child
+  - *Post-Order traversal*: visit left child, then the right child and then the parent
+**** Breadth-first traversal (BFS)
+- BFS algorithm traverses a graph in a breadthward motion and uses a queue to remember to get the next vertex to start a search
+   when a dead end occurs in any iteration
+- There is only one kind of =breadth-first= traversal
+  - *Level order traversal*: visits nodes by levels from top to bottom and from left to right
 * Pathfinding
 ** What is pathfinding algorithm
  - *Pathfinding algorithm*: is to find the shortest route between two points
