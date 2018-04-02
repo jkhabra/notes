@@ -446,3 +446,19 @@ e.g
     def hello_world():
        return 'hello world'
   #+END_SRC
+
+* Decorators
+ - Decorators allows to make simple modifications to callable objects like functions, methods, or classes
+ - We can use the =@= symbol along with the name of the decorator function
+   - Place it above the definition of the function to be decorated
+     e.g
+     #+BEGIN_SRC python
+     @make_pretty
+     def ordinary():
+      print("I am ordinary")
+
+     # it is equivalent to above example
+     def ordinary():
+      print("I am ordinary")
+      ordinary = make_pretty(ordinary)
+     #+End_SRC
