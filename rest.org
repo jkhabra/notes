@@ -1,0 +1,31 @@
+* What is REST API
+ - REST stands for Representation State Transfer
+ - REST was first introduced by Roy Fielding in year 2000
+ - It is web standards based architecture and uses HTTP protocol for data communication
+ - In REST, a REST Server simply provides access to resources and the REST client accesses and presents the resources
+ - In REST, every resources is identify by URIs(Uniform Resource Identifier)/Global IDs
+ - It uses various representations to represent a resources like Text, Json and Xml
+ - Jason is most popular format is used in web Services
+ - REST has six constraints are
+   1. Uniform Interface
+   2. Stateless
+   3. Cacheable
+   4. Client-Server
+   5. Layered System
+   6. Code on Demand (optional)
+* HTTP Method
+** GET
+ - Request data form a specified resource
+ - GET requests can be cached
+ - GET requests have length restrictions
+ - GET requests remain in the browser history
+ - It should be used only to retrieve data
+** POST
+ - Submits data to a processed to a specified resource
+ - POST requests are never cached
+ - POST requests do not remain in the browser history
+ - POST requests have no restrictions on data length
+** PUT
+ - Uploads a representation of the specified URI
+** DELETE
+ - Delete the specified resource
