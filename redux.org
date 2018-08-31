@@ -1,0 +1,15 @@
+*  Redux
+** What is Redux
+- Redux is a predictable state container of JavaScript apps
+- It helps us to write code that behave consistently, run in different environments (client, server, and native)
+- It provides a great developer experience
+- It makes easy to write tests for apps
+** The Redux principle
+- The =createStore= factory function is used to create a =Redux STORE=
+- The =Reducer= is the only mandatory argument passed into =createStore()=
+- The only way to change the state is to emit an action
+  - An object describing what happened
+- For update the state of a app, we convey our action to the =reducer=
+  - This process is mostly called dispatching an action
+  - It always returns new state
+- To specify how the state tree is tranformed by actions, we use =pure reducer=

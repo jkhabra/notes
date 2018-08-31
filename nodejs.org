@@ -1,0 +1,30 @@
+* Async/Await
+ - An async function is a modification to the syntax used in writing promises
+  - It makes writing promises easier
+  - An async function returns a promise, if the function returns a value,
+   - But if the async function throws an error, the promise is rejected with that value
+ - Await is only used with an async function, it ain't work otherwise
+  - It ensure that all promises returned in the async function are synchronized
+  #+BEGIN_SRC javascript
+   async function myDate() {
+    try {
+       let dateDetails = await date;
+       let message     = await orderUber(dateDetails);
+       console.log(message);
+  } catch(error) {
+      console.log(error.message);
+     }
+   }
+   #+END_SRC
+*  What is the Point of Promises
+ - Promises are not just about callback aggregation
+ - Promises are providing correspondence between synchronous and asynchronous functions
+ - There are two important aspects of synchronous functions
+  -  Return values
+  -  Throw exceptions
+ - Synchronous operation is when each step of an operation waits for the previous step to execute completely
+ - Asynchronous: any process that takes a lot of time to process is usually run alongside other synchronous operation and completes in the future
+ 
+*  First class citizen in programming
+ - It means that the language treats functions as values
+ - That can be assign a function into a variable, pass it around etc
