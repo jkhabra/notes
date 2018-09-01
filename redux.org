@@ -7,9 +7,21 @@
 ** The Redux principle
 - The =createStore= factory function is used to create a =Redux STORE=
 - The =Reducer= is the only mandatory argument passed into =createStore()=
+- =InitialState= is the second argument passed into the =createStore()=
+- =Store.getState()= will return the current state
 - The only way to change the state is to emit an action
   - An object describing what happened
 - For update the state of a app, we convey our action to the =reducer=
   - This process is mostly called dispatching an action
-  - It always returns new state
+  - Never mutate the state received in =Reducer=
+  - Instead, we should always return a new copy of the state
+- =store.dispatch()= is used to dispatch an action in Redux
 - To specify how the state tree is tranformed by actions, we use =pure reducer=
+- =store.subscribe()= will re-render the app with the new state values
+    e.g
+  #+BEGIN_SRC react
+const render = () => ReactDOM.render(<App />, document.getElementById("root"));
+render();
+
+store.subscribe(render);
+  #+END_SRC
